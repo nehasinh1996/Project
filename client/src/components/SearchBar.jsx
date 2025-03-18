@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
@@ -6,9 +6,10 @@ import { useNavigate } from "react-router-dom";
 const SearchBar = () => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const navigate = useNavigate();
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -31,27 +32,24 @@ const SearchBar = () => {
       .catch((error) => console.error("Error fetching products:", error));
   }, []);
 
-  // Filter suggestions based on the query
-  useEffect(() => {
-    if (query) {
-      const matches = suggestions.filter((product) =>
-        product.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredSuggestions(matches);
-    } else {
-      setFilteredSuggestions([]);
-    }
+  // Memoized filtered suggestions (Performance Improvement)
+  const filteredSuggestions = useMemo(() => {
+    if (!query) return [];
+    return suggestions.filter((product) =>
+      product.name.toLowerCase().includes(query.toLowerCase())
+    );
   }, [query, suggestions]);
 
   // Update the placeholder text every 3 seconds
   useEffect(() => {
+    if (suggestions.length === 0) return;
     const interval = setInterval(() => {
       setPlaceholderIndex((prev) => (prev + 1) % suggestions.length);
     }, 3000);
     return () => clearInterval(interval);
   }, [suggestions]);
 
-  // Close dropdown if click is outside search bar or dropdown
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -59,30 +57,30 @@ const SearchBar = () => {
         !dropdownRef.current.contains(event.target) &&
         !searchRef.current.contains(event.target)
       ) {
-        setFilteredSuggestions([]);
+        setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handle input field changes
+  // Handle input changes
   const handleChange = (e) => {
     setQuery(e.target.value);
     setHighlightIndex(-1);
+    setShowDropdown(true);
   };
 
-  // Handle clicking a suggestion
+  // Handle suggestion click
   const handleSuggestionClick = (product) => {
     setQuery(product.name);
-    setFilteredSuggestions([]);
+    setShowDropdown(false);
     navigate(`/products/${encodeURIComponent(product.name.replace(/\s+/g, "-").toLowerCase())}`);
   };
 
-  // Handle performing search
+  // Handle search button click
   const handleSearch = () => {
     if (!query.trim()) return;
-
     const matchedProduct = suggestions.find(
       (product) =>
         product.name.toLowerCase().replace(/\s+/g, "-") === query.toLowerCase().replace(/\s+/g, "-")
@@ -95,7 +93,7 @@ const SearchBar = () => {
     }
   };
 
-  // Handle keyboard navigation (Arrow keys, Enter key)
+  // Handle keyboard navigation
   const handleKeyDown = (e) => {
     if (e.key === "ArrowDown") {
       setHighlightIndex((prev) => (prev < filteredSuggestions.length - 1 ? prev + 1 : 0));
@@ -107,6 +105,8 @@ const SearchBar = () => {
       } else {
         handleSearch();
       }
+    } else if (e.key === "Escape") {
+      setShowDropdown(false);
     }
   };
 
@@ -134,7 +134,8 @@ const SearchBar = () => {
           />
         )}
       </div>
-      {filteredSuggestions.length > 0 && (
+
+      {showDropdown && filteredSuggestions.length > 0 && (
         <ul
           ref={dropdownRef}
           className="absolute left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto z-50"
