@@ -21,8 +21,7 @@ const SearchBar = () => {
 
   const handleChange = (e) => {
     dispatch(setSearchQuery(e.target.value));
-
-    if (e.target.value.trim()) {
+    if (e.target.value) {
       setShowDropdown(true);
     } else {
       setShowDropdown(false);
@@ -35,40 +34,24 @@ const SearchBar = () => {
 
     setShowDropdown(false);
 
-    // Check if the entered query matches a product in searchResults
-    const matchedProduct = searchResults.find(
-      (product) =>
-        product.product_name.toLowerCase() === searchQuery.toLowerCase()
+    const matchedProduct = searchResults.find(product => 
+      product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (matchedProduct) {
-      // Navigate to the specific product page if exact match found
-      navigate(
-        `/products/${encodeURIComponent(
-          matchedProduct.product_name.replace(/\s+/g, "-").toLowerCase()
-        )}`
-      );
+      navigate(`/products/${encodeURIComponent(matchedProduct.product_name.replace(/\s+/g, "-").toLowerCase())}`);
     } else {
-      // Otherwise, navigate to the search results page
       navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
     }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "ArrowDown") {
-      setHighlightIndex((prev) =>
-        prev < searchResults.length - 1 ? prev + 1 : 0
-      );
+      setHighlightIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
     } else if (e.key === "ArrowUp") {
-      setHighlightIndex((prev) =>
-        prev > 0 ? prev - 1 : searchResults.length - 1
-      );
+      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
     } else if (e.key === "Enter") {
-      if (highlightIndex >= 0 && searchResults.length > 0) {
-        handleSuggestionClick(searchResults[highlightIndex]);
-      } else {
-        handleSearch();
-      }
+      handleSearch();
     } else if (e.key === "Escape") {
       setShowDropdown(false);
     }
@@ -77,11 +60,7 @@ const SearchBar = () => {
   const handleSuggestionClick = (product) => {
     dispatch(setSearchQuery(product.product_name));
     setShowDropdown(false);
-    navigate(
-      `/products/${encodeURIComponent(
-        product.product_name.replace(/\s+/g, "-").toLowerCase()
-      )}`
-    );
+    navigate(`/products/${encodeURIComponent(product.product_name.replace(/\s+/g, "-").toLowerCase())}`);
   };
 
   return (
@@ -90,7 +69,7 @@ const SearchBar = () => {
         <FaSearch
           className="text-gray-500 ml-2 cursor-pointer"
           size={14}
-          onClick={handleSearch} // Clicking search icon now checks for exact match
+          onClick={handleSearch}
         />
         <input
           type="text"
@@ -100,34 +79,22 @@ const SearchBar = () => {
           onChange={handleChange}
           onKeyDown={handleKeyDown}
         />
-        {searchQuery && (
-          <IoClose
-            className="text-gray-500 cursor-pointer mr-2"
-            size={16}
-            onClick={() => {
-              dispatch(setSearchQuery(""));
-              setShowDropdown(false);
-            }}
-          />
-        )}
+        {searchQuery && <IoClose className="text-gray-500 cursor-pointer mr-2" size={16} onClick={() => dispatch(setSearchQuery(""))} />}
       </div>
 
       {showDropdown && searchResults.length > 0 && (
-        <ul
-          ref={dropdownRef}
-          className="absolute left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto"
-        >
-          {searchResults.map((product, index) => (
-            <li
-              key={product.id}
-              className={`px-3 py-2 text-sm cursor-pointer ${
-                index === highlightIndex ? "bg-blue-100" : "hover:bg-blue-50"
-              }`}
-              onMouseEnter={() => setHighlightIndex(index)}
-              onClick={() => handleSuggestionClick(product)}
-            >
-              {product.product_name}
-            </li>
+        <ul ref={dropdownRef} className="absolute left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
+          {searchResults
+            .filter(product => product.product_name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .map((product, index) => (
+              <li
+                key={product.id}
+                className={`px-3 py-2 text-sm cursor-pointer ${index === highlightIndex ? "bg-blue-100" : "hover:bg-blue-50"}`}
+                onMouseEnter={() => setHighlightIndex(index)}
+                onClick={() => handleSuggestionClick(product)}
+              >
+                {product.product_name}
+              </li>
           ))}
         </ul>
       )}
