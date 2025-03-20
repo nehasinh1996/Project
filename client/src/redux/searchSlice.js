@@ -1,46 +1,35 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// ✅ Initial State
+// Fetch categories and products from JSON
+export const fetchCategories = createAsyncThunk("search/fetchCategories", async () => {
+  const response = await fetch("/data/product.json");
+  const data = await response.json();
+  return data.categories;
+});
+
 const initialState = {
+  categories: [],
   searchQuery: "",
   searchResults: [],
-  loading: false,
+  status: "idle",
   error: null,
 };
 
-// ✅ Fetch Search Results
-export const fetchSearchResults = createAsyncThunk(
-  "search/fetchResults",
-  async (query, { rejectWithValue }) => {
-    try {
-      const response = await fetch("/data/product.json");
-      const data = await response.json();
-
-      // Flatten and filter products based on query
-      const matchedProducts = data.categories.flatMap((category) =>
-        category.subcategories.flatMap((sub) =>
-          sub.products.filter((product) =>
-            product.product_name.toLowerCase().includes(query.toLowerCase())
-          )
-        )
-      );
-
-      return matchedProducts;
-    } catch (error) {
-      console.error("Search fetch error:", error);
-      return rejectWithValue("Error fetching search results.");
-    }
-    
-  }
-);
-
-// ✅ Search Slice
 const searchSlice = createSlice({
   name: "search",
   initialState,
   reducers: {
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
+      state.searchResults = state.categories.flatMap((category) =>
+        category.subcategories.flatMap((sub) =>
+          sub.products.filter((product) =>
+            `${product.product_name} ${category.category_name} ${sub.subcategory_name} ${product.concerns.join(" ")} ${product.treatment_type.join(" ")} ${product.ingredients.join(" ")}`
+              .toLowerCase()
+              .includes(action.payload.toLowerCase())
+          )
+        )
+      );
     },
     clearSearch: (state) => {
       state.searchQuery = "";
@@ -49,23 +38,19 @@ const searchSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchSearchResults.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(fetchCategories.pending, (state) => {
+        state.status = "loading";
       })
-      .addCase(fetchSearchResults.fulfilled, (state, action) => {
-        state.loading = false;
-        state.searchResults = action.payload;
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.categories = action.payload;
       })
-      .addCase(fetchSearchResults.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
       });
   },
 });
 
-// ✅ Export actions
 export const { setSearchQuery, clearSearch } = searchSlice.actions;
-
-// ✅ Export reducer
 export default searchSlice.reducer;

@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCategories, setCategory, setSubcategory } from "../../redux/productsSlice";
 import { sortProducts } from "../../redux/sortby";
@@ -9,25 +9,30 @@ import Header from "../../components/Header";
 import SortBy from "../../components/SortBy";
 import FilterSidebar from "../../components/FilterSidebar";
 import { setFilters, clearFilters } from "../../redux/filterSlice";
+import { setSearchQuery } from "../../redux/searchSlice";
 
 const ProductPage = () => {
   const { categoryName, subCategoryName, productName } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const searchInputRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const { products } = useSelector((state) => state.products);
+  const { searchQuery, searchResults } = useSelector((state) => state.search);
   const sortBy = useSelector((state) => state.sortBy.sortBy);
   const filters = useSelector((state) => state.filter.filters);
 
-  // ✅ Fetch categories on component mount
   useEffect(() => {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-  // ✅ Reset filters and sort on category, subcategory, or product change
   useEffect(() => {
     dispatch(clearFilters());
     localStorage.removeItem("filters");
-
     if (categoryName) dispatch(setCategory(categoryName));
     if (subCategoryName) dispatch(setSubcategory(subCategoryName));
   }, [categoryName, subCategoryName, productName, dispatch]);
@@ -36,12 +41,48 @@ const ProductPage = () => {
     dispatch(setFilters(filters));
   }, [filters, dispatch]);
 
-  // ✅ Decode and normalize product name from URL
-  const decodedProductName = decodeURIComponent(productName || "")
-    .toLowerCase()
-    .replace(/\s+/g, "-");
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const query = params.get("query");
+    if (query) {
+      dispatch(setSearchQuery(query));
+    }
+  }, [location.search, dispatch]);
 
-  // ✅ Apply filters to products
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    setShowDropdown(false);
+    navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
+    dispatch(setSearchQuery(searchQuery));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      setHighlightIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
+    } else if (e.key === "Enter") {
+      if (highlightIndex >= 0 && searchResults.length > 0) {
+        const selectedProduct = searchResults[highlightIndex];
+        dispatch(setSearchQuery(selectedProduct.product_name));
+        setShowDropdown(false);
+        navigate(`/products/${encodeURIComponent(selectedProduct.product_name.replace(/\s+/g, "-").toLowerCase())}`);
+      } else {
+        handleSearch();
+      }
+    } else if (e.key === "Escape") {
+      setShowDropdown(false);
+    }
+  };
+
+  const handleSuggestionClick = (product) => {
+    dispatch(setSearchQuery(product.product_name));
+    setShowDropdown(false);
+    navigate(`/products/${encodeURIComponent(product.product_name.replace(/\s+/g, "-").toLowerCase())}`);
+  };
+
+  const decodedProductName = decodeURIComponent(productName || "").toLowerCase().replace(/\s+/g, "-");
+
   const filteredProducts = products.filter((product) => {
     const matchesConcerns =
       filters.concerns.length === 0 ||
@@ -58,11 +99,11 @@ const ProductPage = () => {
     return matchesConcerns && matchesTreatmentType && matchesIngredients;
   });
 
-  // ✅ Match and display the correct product
-  const displayedProducts = productName
+  const displayedProducts = searchQuery
+    ? searchResults
+    : productName
     ? filteredProducts.filter(
-        (p) =>
-          p.product_name.toLowerCase().replace(/\s+/g, "-") === decodedProductName
+        (p) => p.product_name.toLowerCase().replace(/\s+/g, "-") === decodedProductName
       )
     : sortProducts(filteredProducts, sortBy);
 
@@ -70,60 +111,33 @@ const ProductPage = () => {
     <>
       <Header />
       <Banner />
-
-      {/* ✅ Filter and Sort section just below the banner */}
       <div className="relative flex items-center justify-end px-2 py-3 border-b border-gray-300">
         <div className="fixed left-0 top-1/4 z-50">
           <FilterSidebar />
         </div>
         <SortBy />
       </div>
+      
+      {/* ✅ Search Suggestions Dropdown */}
+      {showDropdown && searchResults.length > 0 && (
+        <ul ref={dropdownRef} className="absolute left-0 w-64 bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
+          {searchResults.map((product, index) => (
+            <li
+              key={product.id}
+              className={`px-3 py-2 text-sm cursor-pointer ${index === highlightIndex ? "bg-blue-100" : "hover:bg-blue-50"}`}
+              onMouseEnter={() => setHighlightIndex(index)}
+              onClick={() => handleSuggestionClick(product)}
+            >
+              {product.product_name}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="p-6">
-        {/* ✅ Breadcrumb Navigation */}
-        <h1 className="text-sm mb-4">
-          <Link
-            to={`/category/${categoryName}`}
-            className={`$${
-              subCategoryName || productName
-                ? "text-gray-500 hover:underline"
-                : "text-black font-bold"
-            }`}
-          >
-            {categoryName}
-          </Link>
-          {subCategoryName && (
-            <>
-              {" > "}
-              <Link
-                to={`/category/${categoryName}/${subCategoryName}`}
-                className={`$${
-                  productName ? "text-gray-500 hover:underline" : "text-black font-bold"
-                }`}
-              >
-                {subCategoryName}
-              </Link>
-            </>
-          )}
-          {productName && (
-            <>
-              {" > "}
-              <span className="text-black font-bold">
-                {products.find(
-                  (p) =>
-                    p.product_name.toLowerCase().replace(/\s+/g, "-") === decodedProductName
-                )?.product_name || productName.replace(/-/g, " ")}
-              </span>
-            </>
-          )}
-        </h1>
-
-        {/* ✅ Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-8 gap-y-10 mt-6">
           {displayedProducts.length > 0 ? (
-            displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))
+            displayedProducts.map((product) => <ProductCard key={product.id} product={product} />)
           ) : (
             <p className="text-center text-gray-500 col-span-full">No products found.</p>
           )}

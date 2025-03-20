@@ -1,107 +1,71 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchQuery, fetchCategories } from "../redux/searchSlice";
 import { FaSearch } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
 const SearchBar = () => {
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const [showDropdown, setShowDropdown] = useState(false);
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  // Fetch product names when the component mounts
+  const { searchQuery, searchResults } = useSelector((state) => state.search);
+
   useEffect(() => {
-    fetch("/data/product.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const productNames = data.categories.flatMap((category) =>
-          category.subcategories.flatMap((sub) =>
-            sub.products.map((product) => ({
-              name: product.product_name,
-              id: product.id,
-            }))
-          )
-        );
-        setSuggestions(productNames);
-      })
-      .catch((error) => console.error("Error fetching products:", error));
-  }, []);
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
-  // Memoized filtered suggestions (Performance Improvement)
-  const filteredSuggestions = useMemo(() => {
-    if (!query) return [];
-    return suggestions.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [query, suggestions]);
-
-  // Update the placeholder text every 3 seconds
-  useEffect(() => {
-    if (suggestions.length === 0) return;
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % suggestions.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [suggestions]);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target) &&
-        !searchRef.current.contains(event.target)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Handle input changes
   const handleChange = (e) => {
-    setQuery(e.target.value);
+    dispatch(setSearchQuery(e.target.value));
+
+    if (e.target.value.trim()) {
+      setShowDropdown(true);
+    } else {
+      setShowDropdown(false);
+    }
     setHighlightIndex(-1);
-    setShowDropdown(true);
   };
 
-  // Handle suggestion click
-  const handleSuggestionClick = (product) => {
-    setQuery(product.name);
-    setShowDropdown(false);
-    navigate(`/products/${encodeURIComponent(product.name.replace(/\s+/g, "-").toLowerCase())}`);
-  };
-
-  // Handle search button click
   const handleSearch = () => {
-    if (!query.trim()) return;
-    const matchedProduct = suggestions.find(
+    if (!searchQuery.trim()) return;
+
+    setShowDropdown(false);
+
+    // Check if the entered query matches a product in searchResults
+    const matchedProduct = searchResults.find(
       (product) =>
-        product.name.toLowerCase().replace(/\s+/g, "-") === query.toLowerCase().replace(/\s+/g, "-")
+        product.product_name.toLowerCase() === searchQuery.toLowerCase()
     );
 
     if (matchedProduct) {
-      navigate(`/products/${encodeURIComponent(query.replace(/\s+/g, "-").toLowerCase())}`);
+      // Navigate to the specific product page if exact match found
+      navigate(
+        `/products/${encodeURIComponent(
+          matchedProduct.product_name.replace(/\s+/g, "-").toLowerCase()
+        )}`
+      );
     } else {
-      alert("No products found!");
+      // Otherwise, navigate to the search results page
+      navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
     }
   };
 
-  // Handle keyboard navigation
   const handleKeyDown = (e) => {
     if (e.key === "ArrowDown") {
-      setHighlightIndex((prev) => (prev < filteredSuggestions.length - 1 ? prev + 1 : 0));
+      setHighlightIndex((prev) =>
+        prev < searchResults.length - 1 ? prev + 1 : 0
+      );
     } else if (e.key === "ArrowUp") {
-      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : filteredSuggestions.length - 1));
+      setHighlightIndex((prev) =>
+        prev > 0 ? prev - 1 : searchResults.length - 1
+      );
     } else if (e.key === "Enter") {
-      if (highlightIndex >= 0) {
-        handleSuggestionClick(filteredSuggestions[highlightIndex]);
+      if (highlightIndex >= 0 && searchResults.length > 0) {
+        handleSuggestionClick(searchResults[highlightIndex]);
       } else {
         handleSearch();
       }
@@ -110,37 +74,50 @@ const SearchBar = () => {
     }
   };
 
+  const handleSuggestionClick = (product) => {
+    dispatch(setSearchQuery(product.product_name));
+    setShowDropdown(false);
+    navigate(
+      `/products/${encodeURIComponent(
+        product.product_name.replace(/\s+/g, "-").toLowerCase()
+      )}`
+    );
+  };
+
   return (
     <div className="relative w-64 mx-auto mt-2 z-50" ref={searchRef}>
       <div className="flex items-center border border-gray-300 rounded-full bg-white shadow-sm h-8">
         <FaSearch
           className="text-gray-500 ml-2 cursor-pointer"
           size={14}
-          onMouseDown={handleSearch}
+          onClick={handleSearch} // Clicking search icon now checks for exact match
         />
         <input
           type="text"
           className="w-full px-3 py-1 text-sm outline-none text-gray-800 bg-transparent"
-          placeholder={`Try ${suggestions[placeholderIndex]?.name || "a product"}`}
-          value={query}
+          placeholder="Search for products..."
+          value={searchQuery}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
         />
-        {query && (
+        {searchQuery && (
           <IoClose
             className="text-gray-500 cursor-pointer mr-2"
             size={16}
-            onClick={() => setQuery("")}
+            onClick={() => {
+              dispatch(setSearchQuery(""));
+              setShowDropdown(false);
+            }}
           />
         )}
       </div>
 
-      {showDropdown && filteredSuggestions.length > 0 && (
+      {showDropdown && searchResults.length > 0 && (
         <ul
           ref={dropdownRef}
-          className="absolute left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto z-50"
+          className="absolute left-0 w-full bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto"
         >
-          {filteredSuggestions.map((product, index) => (
+          {searchResults.map((product, index) => (
             <li
               key={product.id}
               className={`px-3 py-2 text-sm cursor-pointer ${
@@ -149,7 +126,7 @@ const SearchBar = () => {
               onMouseEnter={() => setHighlightIndex(index)}
               onClick={() => handleSuggestionClick(product)}
             >
-              {product.name}
+              {product.product_name}
             </li>
           ))}
         </ul>
