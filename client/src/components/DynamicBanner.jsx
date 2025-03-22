@@ -6,7 +6,8 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
   const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/offers") // ✅ Fetch data from MongoDB API
+    fetch("https://soradata.vercel.app/api/offers") //fetch data from vercel
+
       .then((response) => response.json())
       .then((data) => {
         console.log("Fetched Data:", data); // ✅ Debugging
