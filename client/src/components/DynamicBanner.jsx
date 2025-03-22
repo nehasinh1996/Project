@@ -53,7 +53,7 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
 
   if (offersData.length === 0)
     return (
-      <div className="w-full bg-black text-white text-center p-1 text-sm font-semibold">
+      <div className="w-full bg-black text-white text-center p-1 text-md font-semibold">
         Loading offers...
       </div>
     );
