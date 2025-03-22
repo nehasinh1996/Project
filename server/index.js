@@ -18,26 +18,22 @@ mongoose
   .catch((error) => console.error("❌ MongoDB Connection Error:", error));
 
 // ✅ Dynamic API Route for Any Collection
-app.get("/api/:collection", async (req, res) => {
-  const { collection } = req.params;
+// ✅ Endpoint to get offers
+app.get("/api/offers", async (req, res) => {
   try {
     const data = await mongoose.connection.db
-      .collection(collection)
+      .collection("offers")
       .find()
       .toArray();
 
-    // ✅ If the collection has only 1 document with an array, return the array directly
+    // If the collection contains an array of offers
     if (data.length === 1 && Array.isArray(data[0].offers)) {
-      res.json({ offers: data[0].offers }); // Extract offers directly
+      res.json({ offers: data[0].offers });
     } else {
-      res.json({ [collection]: data });
+      res.json({ offers: data });
     }
   } catch (error) {
-    res.status(500).json({ error: `❌ Failed to fetch ${collection}` });
+    res.status(500).json({ error: "❌ Failed to fetch offers" });
   }
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
