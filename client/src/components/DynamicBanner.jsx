@@ -6,9 +6,13 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
   const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
 
   useEffect(() => {
-    fetch("/data/offers.json")
+    fetch("http://localhost:5000/api/offers") // ✅ Fetch data from MongoDB API
       .then((response) => response.json())
-      .then((data) => setOffersData(data.offers || []))
+      .then((data) => {
+        console.log("Fetched Data:", data); // ✅ Debugging
+        const offersArray = data.offers ? data.offers[0].offers : []; // ✅ Extract correct data
+        setOffersData(offersArray);
+      })
       .catch((error) => console.error("Error loading offers:", error));
   }, []);
 
