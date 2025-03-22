@@ -6,15 +6,14 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
   const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
 
   useEffect(() => {
-    fetch("https://soradata.vercel.app/api/offers") //fetch data from vercel
-
+    fetch("https://soradata.vercel.app/api/offers") // ✅ Fetch data from Vercel
       .then((response) => response.json())
       .then((data) => {
         console.log("Fetched Data:", data); // ✅ Debugging
-        const offersArray = data.offers ? data.offers[0].offers : []; // ✅ Extract correct data
+        const offersArray = data.offers || []; // ✅ Extract correct data
         setOffersData(offersArray);
       })
-      .catch((error) => console.error("Error loading offers:", error));
+      .catch((error) => console.error("❌ Error loading offers:", error));
   }, []);
 
   useEffect(() => {
@@ -35,7 +34,15 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
 
     return message.split(regex).map((part, index) =>
       highlights.includes(part) ? (
-        <span key={index} style={{ fontSize: "1.1rem", color: "#FFD700", margin: "0 0.25rem", fontWeight: "bold" }}>
+        <span
+          key={index}
+          style={{
+            fontSize: "1.1rem",
+            color: "#FFD700",
+            margin: "0 0.25rem",
+            fontWeight: "bold",
+          }}
+        >
           {part}
         </span>
       ) : (
@@ -44,19 +51,31 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
     );
   };
 
-  if (offersData.length === 0) return <div className="w-full bg-black text-white text-center p-1 text-sm font-semibold">Loading offers...</div>;
+  if (offersData.length === 0)
+    return (
+      <div className="w-full bg-black text-white text-center p-1 text-sm font-semibold">
+        Loading offers...
+      </div>
+    );
 
   return (
     <div
       className={`w-full bg-black text-white text-center p-1 text-sm font-semibold overflow-hidden transition-all duration-300
         ${isScrollingUp && !isSticky ? "-translate-y-full" : "translate-y-0"}`}
     >
-      <div key={currentOfferIndex} className="flex items-center justify-center gap-3" aria-live="polite">
-        <span className="text-2xl">{offersData[currentOfferIndex].sticker}</span>
+      <div
+        key={currentOfferIndex}
+        className="flex items-center justify-center gap-3"
+        aria-live="polite"
+      >
+        <span className="text-2xl">{offersData[currentOfferIndex]?.sticker}</span>
         <p className="text-sm md:text-sm font-medium">
-          {renderMessage(offersData[currentOfferIndex].message, offersData[currentOfferIndex].highlight)}
+          {renderMessage(
+            offersData[currentOfferIndex]?.message,
+            offersData[currentOfferIndex]?.highlight
+          )}
         </p>
-        <span className="text-2xl">{offersData[currentOfferIndex].sticker}</span>
+        <span className="text-2xl">{offersData[currentOfferIndex]?.sticker}</span>
       </div>
     </div>
   );
@@ -65,7 +84,7 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
 // ✅ Add PropTypes validation
 DynamicBanner.propTypes = {
   isScrollingUp: PropTypes.bool.isRequired, // Expecting a boolean
-  isSticky: PropTypes.bool.isRequired,      // Expecting a boolean
+  isSticky: PropTypes.bool.isRequired, // Expecting a boolean
 };
 
 export default DynamicBanner;

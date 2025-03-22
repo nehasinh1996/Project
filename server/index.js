@@ -21,10 +21,19 @@ mongoose
 app.get("/api/:collection", async (req, res) => {
   const { collection } = req.params;
   try {
-    const data = await mongoose.connection.db.collection(collection).find().toArray();
-    res.json({ [collection]: data });
+    const data = await mongoose.connection.db
+      .collection(collection)
+      .find()
+      .toArray();
+
+    // ✅ If the collection has only 1 document with an array, return the array directly
+    if (data.length === 1 && Array.isArray(data[0].offers)) {
+      res.json({ offers: data[0].offers }); // Extract offers directly
+    } else {
+      res.json({ [collection]: data });
+    }
   } catch (error) {
-    res.status(500).json({ error: `Failed to fetch ${collection}` });
+    res.status(500).json({ error: `❌ Failed to fetch ${collection}` });
   }
 });
 
