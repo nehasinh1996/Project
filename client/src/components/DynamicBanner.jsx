@@ -9,7 +9,7 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
   useEffect(() => {
     console.log("API URL:", import.meta.env.VITE_API_URL); // Debug API URL
   
-    fetch(`${import.meta.env.VITE_API_URL}/api/offers`)
+    fetch(`${import.meta.env.VITE_API_URL}`)
 
       .then((res) => res.json())
       .then((data) => {

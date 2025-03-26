@@ -97,21 +97,6 @@ const ProductPage = () => {
         </div>
         <SortBy />
       </div>
-      
-      {/* ✅ Search Input */}
-      <div className="flex justify-center mt-4">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch();
-          }}
-          className="border border-gray-300 rounded px-3 py-2 w-64"
-          placeholder="Search products..."
-        />
-        <button onClick={handleSearch} className="ml-2 bg-blue-500 text-white px-4 py-2 rounded">Search</button>
-      </div>
 
       {/* ✅ Search Suggestions Dropdown */}
       {showDropdown && searchResults.length > 0 && (
