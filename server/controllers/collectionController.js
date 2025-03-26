@@ -1,10 +1,10 @@
-import Collection from "../models/collectionModel.js";
+import mongoose from "mongoose";
 
 // Get all collections
 export const getCollections = async (req, res) => {
   try {
-    const collections = await Collection.find();
-    res.status(200).json(collections);
+    const data = await mongoose.connection.db.collection("collections").find().toArray();
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error });
   }
