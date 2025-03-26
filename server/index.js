@@ -49,5 +49,17 @@ app.get("/api/testimonials", async (_, res) => {
   }
 });
 
+// ✅ API Route - Get Carousel Images
+app.get("/api/carouselImages", async (_, res) => {
+  try {
+    const data = await mongoose.connection.db.collection("carouselImages").find().toArray();
+    res.json({ images: data[0]?.images || [] });
+  } catch (error) {
+    console.error("❌ Error fetching carousel images:", error);
+    res.status(500).json({ error: "Failed to fetch carousel images" });
+  }
+});
+
+
 // ✅ Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
