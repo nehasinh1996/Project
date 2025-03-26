@@ -1,4 +1,4 @@
-require("dotenv").config(); // ✅ Load environment variables
+require("dotenv").config(); // Load environment variables
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -7,27 +7,44 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Middleware
-app.use(cors());
+// ✅ Middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://your-vercel-app-url.vercel.app"], // Allow both local & deployed frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
-// ✅ Connect to MongoDB Atlas (No Deprecated Options)
+// ✅ Connect to MongoDB Atlas
 mongoose
   .connect(MONGO_URI)
   .then(() => console.log("🔥 Connected to MongoDB Atlas"))
-  .catch((error) => console.error("❌ MongoDB Connection Error:", error));
+  .catch((error) => {
+    console.error("❌ MongoDB Connection Error:", error);
+    process.exit(1); // Exit if MongoDB fails to connect
+  });
 
-// ✅ Endpoint to get offers
-app.get("/api/offers", async (_, res) => {  // Use `_` instead of `req`
+// ✅ Debugging CORS Issue (Before Routes)
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
+// ✅ API Route - Get Offers
+app.get("/api/offers", async (_, res) => {
   try {
     const data = await mongoose.connection.db.collection("offers").find().toArray();
-    res.json({ offers: data.length === 1 && Array.isArray(data[0].offers) ? data[0].offers : data });
+    res.json({ offers: Array.isArray(data[0]?.offers) ? data[0].offers : data });
   } catch (error) {
     console.error("❌ Error fetching offers:", error);
-    res.status(500).json({ error: "❌ Failed to fetch offers" });
+    res.status(500).json({ error: "Failed to fetch offers" });
   }
 });
 
-
-// ✅ Start the server
+// ✅ Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

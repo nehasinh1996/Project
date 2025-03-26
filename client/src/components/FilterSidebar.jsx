@@ -7,8 +7,8 @@ import { useParams } from "react-router-dom";
 
 const FilterSidebar = () => {
   const dispatch = useDispatch();
-  const categories = useSelector((state) => state.products.categories) || [];
-  const memoizedCategories = useMemo(() => categories, [categories]);
+  const categories = useSelector((state) => state.products.categories);
+  const memoizedCategories = useMemo(() => categories || [], [categories]);
   
   const { categoryName, subCategoryName, productName } = useParams();
   const [isHovered, setIsHovered] = useState(false);

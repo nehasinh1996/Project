@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCategories, setCategory, setSubcategory } from "../../redux/productsSlice";
 import { sortProducts } from "../../redux/sortby";
@@ -16,7 +16,6 @@ const ProductPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const searchInputRef = useRef(null);
   const dropdownRef = useRef(null);
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -54,25 +53,6 @@ const ProductPage = () => {
     setShowDropdown(false);
     navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
     dispatch(setSearchQuery(searchQuery));
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "ArrowDown") {
-      setHighlightIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : 0));
-    } else if (e.key === "ArrowUp") {
-      setHighlightIndex((prev) => (prev > 0 ? prev - 1 : searchResults.length - 1));
-    } else if (e.key === "Enter") {
-      if (highlightIndex >= 0 && searchResults.length > 0) {
-        const selectedProduct = searchResults[highlightIndex];
-        dispatch(setSearchQuery(selectedProduct.product_name));
-        setShowDropdown(false);
-        navigate(`/products/${encodeURIComponent(selectedProduct.product_name.replace(/\s+/g, "-").toLowerCase())}`);
-      } else {
-        handleSearch();
-      }
-    } else if (e.key === "Escape") {
-      setShowDropdown(false);
-    }
   };
 
   const handleSuggestionClick = (product) => {
@@ -118,6 +98,21 @@ const ProductPage = () => {
         <SortBy />
       </div>
       
+      {/* ✅ Search Input */}
+      <div className="flex justify-center mt-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSearch();
+          }}
+          className="border border-gray-300 rounded px-3 py-2 w-64"
+          placeholder="Search products..."
+        />
+        <button onClick={handleSearch} className="ml-2 bg-blue-500 text-white px-4 py-2 rounded">Search</button>
+      </div>
+
       {/* ✅ Search Suggestions Dropdown */}
       {showDropdown && searchResults.length > 0 && (
         <ul ref={dropdownRef} className="absolute left-0 w-64 bg-white border border-gray-300 shadow-lg rounded-lg mt-1 max-h-48 overflow-y-auto">
