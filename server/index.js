@@ -11,8 +11,7 @@ const MONGO_URI = process.env.MONGO_URI;
 app.use(express.json());
 app.use(
   cors({
-    origin:"*", // Allow both local & deployed frontend
-    
+    origin: "*", // Allow both local & deployed frontend
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -28,14 +27,6 @@ mongoose
     process.exit(1); // Exit if MongoDB fails to connect
   });
 
-// ✅ Debugging CORS Issue (Before Routes)
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
-
 // ✅ API Route - Get Offers
 app.get("/api/offers", async (_, res) => {
   try {
@@ -44,6 +35,17 @@ app.get("/api/offers", async (_, res) => {
   } catch (error) {
     console.error("❌ Error fetching offers:", error);
     res.status(500).json({ error: "Failed to fetch offers" });
+  }
+});
+
+// ✅ API Route - Get Testimonials
+app.get("/api/testimonials", async (_, res) => {
+  try {
+    const data = await mongoose.connection.db.collection("testimonials").find().toArray();
+    res.json({ testimonials: data });
+  } catch (error) {
+    console.error("❌ Error fetching testimonials:", error);
+    res.status(500).json({ error: "Failed to fetch testimonials" });
   }
 });
 

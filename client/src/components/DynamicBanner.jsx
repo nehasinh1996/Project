@@ -2,27 +2,28 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 const DynamicBanner = ({ isScrollingUp, isSticky }) => {
-  const [offersData, setOffersData] = useState([]);
+  const [offersData, setOffersData] = useState([
+    { sticker: "🔥", message: "Limited Time Offer: 30% Off!", highlight: "30% Off" },
+    { sticker: "🎁", message: "Buy 1 Get 1 Free on Selected Items!", highlight: "Buy 1 Get 1 Free" }
+  ]);
   const [currentOfferIndex, setCurrentOfferIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("API URL:", import.meta.env.VITE_API_URL); // Debug API URL
+    console.log("API URL:", import.meta.env.VITE_API_URL);
   
     fetch(`${import.meta.env.VITE_API_URL}`)
-
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched Offers:", data);
-        setOffersData(data.offers || []);
-        setLoading(false);
+        if (data.offers?.length > 0) {
+          setOffersData(data.offers);
+        }
       })
       .catch((error) => {
         console.error("❌ Error loading offers:", error);
-        setLoading(false);
       });
   }, []);
-  
 
   useEffect(() => {
     if (offersData.length === 0) return;
@@ -53,13 +54,11 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
 
   return (
     <div
-      className={`w-full bg-black text-white text-center p-3 text-sm font-semibold overflow-hidden transition-transform duration-300 ${
+      className={`w-full h-10 bg-black text-white text-center p-1 text-sm font-semibold overflow-hidden transition-transform duration-300 ${
         isScrollingUp && !isSticky ? "-translate-y-full" : "translate-y-0"
       }`}
     >
-      {loading ? (
-        <p className="animate-pulse">Fetching offers...</p>
-      ) : offersData.length === 0 ? (
+      {offersData.length === 0 ? (
         <p>No offers available.</p>
       ) : (
         <div key={currentOfferIndex} className="flex items-center justify-center gap-3">

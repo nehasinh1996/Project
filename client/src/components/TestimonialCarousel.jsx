@@ -8,18 +8,21 @@ const TestimonialCarousel = () => {
   const [testimonials, setTestimonials] = useState([]);
 
   useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const response = await fetch("/data/testimonials.json");
-        if (!response.ok) throw new Error("Failed to load testimonials");
-        const data = await response.json();
-        setTestimonials(data.testimonials);
-      } catch (error) {
-        console.error("Error fetching testimonials:", error);
-      }
-    };
-    fetchTestimonials();
+    console.log("API URL:", import.meta.env.VITE_API_URL);
+  
+    fetch(`${import.meta.env.VITE_API_URL}/api/testimonials`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Fetched Testimonials:", data);
+        if (data.testimonials?.length > 0) {
+          setTestimonials(data.testimonials);
+        }
+      })
+      .catch((error) => {
+        console.error("❌ Error fetching testimonials:", error);
+      });
   }, []);
+  
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -32,27 +35,19 @@ const TestimonialCarousel = () => {
       <div className="relative w-full py-12 flex flex-col items-center overflow-visible">
         {/* Fixed Wave/Thread */}
         <div className="absolute top-10 left-0 w-full z-0">
-        <svg
-  viewBox="0 0 1440 100"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
-  className="w-full h-30 text-gray-200"
->
-<path
-  d="
-  M0,50
-  C120,80 240,20 360,50
-  C480,80 600,20 720,50
-  C840,80 960,20 1080,50
-  C1200,80 1320,20 1440,50
-  "
-  stroke="currentColor"
-  strokeWidth="2"
-  fill="none"
-/>
-
-</svg>
-
+          <svg
+            viewBox="0 0 1440 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-30 text-gray-200"
+          >
+            <path
+              d="M0,50 C120,80 240,20 360,50 C480,80 600,20 720,50 C840,80 960,20 1080,50 C1200,80 1320,20 1440,50"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+            />
+          </svg>
         </div>
 
         {/* Swiper Wrapper */}
@@ -122,27 +117,26 @@ const TestimonialCarousel = () => {
 
         {/* Add animation styles inside JSX */}
         <style>
-  {`
-    @keyframes sway {
-      0% { transform: rotate(4deg) translateY(0); }
-      50% { transform: rotate(-4deg) translateY(0); }
-      100% { transform: rotate(4deg) translateY(0); }
-    }
+          {`
+            @keyframes sway {
+              0% { transform: rotate(4deg) translateY(0); }
+              50% { transform: rotate(-4deg) translateY(0); }
+              100% { transform: rotate(4deg) translateY(0); }
+            }
 
-    @keyframes swayReverse {
-      0% { transform: rotate(-4deg) translateY(0); }
-      50% { transform: rotate(4deg) translateY(0); }
-      100% { transform: rotate(-4deg) translateY(0); }
-    }
+            @keyframes swayReverse {
+              0% { transform: rotate(-4deg) translateY(0); }
+              50% { transform: rotate(4deg) translateY(0); }
+              100% { transform: rotate(-4deg) translateY(0); }
+            }
 
-    .relative {
-      transform-style: preserve-3d;
-      will-change: transform;
-      translate: 0 0;
-    }
-  `}
-</style>
-
+            .relative {
+              transform-style: preserve-3d;
+              will-change: transform;
+              translate: 0 0;
+            }
+          `}
+        </style>
       </div>
     </div>
   );
