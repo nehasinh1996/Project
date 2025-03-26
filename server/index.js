@@ -6,6 +6,8 @@ const connectDB = require("./config/db");
 const offersRoutes = require("./routes/offers");
 const testimonialsRoutes = require("./routes/testimonials");
 const carouselRoutes = require("./routes/carousel");
+const collectionsRoutes = require("./routes/collections"); 
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,4 +26,6 @@ app.use("/api/carouselImages", carouselRoutes);
 app.use("/api/collections", collectionRoutes);
 
 // ✅ Start Server
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
