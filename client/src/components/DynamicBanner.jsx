@@ -53,7 +53,7 @@ const DynamicBanner = ({ isScrollingUp, isSticky }) => {
 
   return (
     <div
-      className={`w-full bg-black text-white text-center p-1 text-sm font-semibold overflow-hidden transition-transform duration-300 ${
+      className={`w-full bg-black text-white text-center p-3 text-sm font-semibold overflow-hidden transition-transform duration-300 ${
         isScrollingUp && !isSticky ? "-translate-y-full" : "translate-y-0"
       }`}
     >
