@@ -11,7 +11,8 @@ const MONGO_URI = process.env.MONGO_URI;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://your-vercel-app-url.vercel.app"], // Allow both local & deployed frontend
+    origin: ["http://localhost:5173", "https://project-ashen-alpha.vercel.app"], // Allow both local & deployed frontend
+    
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
