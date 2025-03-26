@@ -4,18 +4,21 @@ import { motion } from "framer-motion";
 
 const Collections = () => {
   const [collections, setCollections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const response = await fetch("/data/collections.json");
+        const response = await fetch("https://project-xb43.onrender.com/api/collections");
         if (!response.ok) {
           throw new Error("Failed to load collections");
         }
         const data = await response.json();
-        setCollections(data.collections);
+        setCollections(data);
       } catch (error) {
         console.error("Error fetching collections:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -24,7 +27,6 @@ const Collections = () => {
 
   return (
     <div className="text-center py-16 px-6 bg-gradient-to-b from-pink-100 to-white">
-      {/* Section Title with Animation */}
       <motion.h1
         className="text-5xl font-bold mb-12 text-gray-700"
         initial={{ opacity: 0, y: -20 }}
@@ -34,9 +36,10 @@ const Collections = () => {
         Indulge in Self-Care
       </motion.h1>
 
-      {/* Grid Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 justify-center">
-        {collections.length > 0 ? (
+        {loading ? (
+          <p className="text-gray-500 col-span-full">Loading collections...</p>
+        ) : collections.length > 0 ? (
           collections.map((collection, index) => (
             <motion.div
               key={index}
@@ -47,7 +50,6 @@ const Collections = () => {
               viewport={{ once: false, amount: 0.2 }}
             >
               <Link to={collection.route}>
-                {/* Image with Border & Glow Effect */}
                 <motion.img
                   src={collection.image}
                   alt={collection.title}
@@ -58,8 +60,6 @@ const Collections = () => {
                     boxShadow: "0px 0px 25px rgba(255, 105, 180, 0.6)",
                   }}
                 />
-
-                {/* Text with Hover Effect */}
                 <motion.h1
                   className="text-2xl mt-4 text-gray-800 font-semibold transition-all duration-300"
                   whileHover={{ color: "#ff69b4" }}
@@ -70,7 +70,7 @@ const Collections = () => {
             </motion.div>
           ))
         ) : (
-          <p className="text-gray-500 col-span-full">Loading collections...</p>
+          <p className="text-gray-500 col-span-full">No collections available.</p>
         )}
       </div>
     </div>

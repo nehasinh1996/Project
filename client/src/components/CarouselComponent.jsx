@@ -14,7 +14,7 @@ const CarouselComponent = () => {
           throw new Error("Failed to load images");
         }
         const data = await response.json();
-        setImages(data?.images || []); // Ensure fallback in case of undefined data
+        setImages(data?.images || []);
       } catch (error) {
         console.error("Error fetching carousel images:", error);
       } finally {
@@ -26,21 +26,31 @@ const CarouselComponent = () => {
   }, []);
 
   return (
-    <Carousel autoplay autoplayDelay={3000} loop className="w-full h-[70vh] mt-10 overflow-hidden">
-      {loading ? (
-        <p className="text-center text-gray-500">Loading images...</p>
-      ) : images.length > 0 ? (
-        images.map((src, idx) => (
+    <Carousel autoplay autoplayDelay={3000} loop className="w-full h-[80vh] mt-10 overflow-hidden">
+      {loading
+        ? Array.from({ length: 3 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="w-full h-full bg-gray-300 animate-pulse flex items-center justify-center"
+            />
+          ))
+        : images.length > 0
+        ? images.map((src, idx) => (
+            <img
+              key={idx}
+              src={src}
+              alt={`slide ${idx + 1}`}
+              className="w-full h-full object-cover transition-opacity duration-700 opacity-0"
+              onLoad={(e) => (e.target.style.opacity = 1)}
+            />
+          ))
+        : (
           <img
-            key={idx}
-            src={src}
-            alt={`slide ${idx + 1}`}
+            src="https://via.placeholder.com/1500x800?text=No+Images+Available"
+            alt="No images"
             className="w-full h-full object-cover"
           />
-        ))
-      ) : (
-        <p className="text-center text-gray-500">No images available</p>
-      )}
+        )}
     </Carousel>
   );
 };
