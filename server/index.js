@@ -23,7 +23,7 @@ connectDB();
 app.use("/api/offers", offersRoutes);
 app.use("/api/testimonials", testimonialsRoutes);
 app.use("/api/carouselImages", carouselRoutes);
-app.use("/api/collections", collectionRoutes);
+app.use("/api/collections", collectionsRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {
