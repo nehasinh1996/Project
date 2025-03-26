@@ -8,21 +8,18 @@ const TestimonialCarousel = () => {
   const [testimonials, setTestimonials] = useState([]);
 
   useEffect(() => {
-    console.log("API URL:", import.meta.env.VITE_API_URL);
-  
-    fetch(`${import.meta.env.VITE_API_URL}/api/testimonials`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched Testimonials:", data);
-        if (data.testimonials?.length > 0) {
-          setTestimonials(data.testimonials);
-        }
-      })
-      .catch((error) => {
-        console.error("❌ Error fetching testimonials:", error);
-      });
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch("https://project-xb43.onrender.com/api/testimonials");
+        if (!response.ok) throw new Error("Failed to load testimonials");
+        const data = await response.json();
+        setTestimonials(data.testimonials);
+      } catch (error) {
+        console.error("Error fetching testimonials:", error);
+      }
+    };
+    fetchTestimonials();
   }, []);
-  
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -42,7 +39,13 @@ const TestimonialCarousel = () => {
             className="w-full h-30 text-gray-200"
           >
             <path
-              d="M0,50 C120,80 240,20 360,50 C480,80 600,20 720,50 C840,80 960,20 1080,50 C1200,80 1320,20 1440,50"
+              d="
+                M0,50
+                C120,80 240,20 360,50
+                C480,80 600,20 720,50
+                C840,80 960,20 1080,50
+                C1200,80 1320,20 1440,50
+              "
               stroke="currentColor"
               strokeWidth="2"
               fill="none"
@@ -100,7 +103,6 @@ const TestimonialCarousel = () => {
                         alt={review.name}
                         className="w-full h-auto max-h-[300px] object-contain rounded-md"
                       />
-
                       <h3 className="text-md text-black mt-2">
                         {review.name}, {review.age}
                       </h3>
