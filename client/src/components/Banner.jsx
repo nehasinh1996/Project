@@ -8,11 +8,11 @@ const Banner = () => {
   const [banner, setBanner] = useState(null);
   const [fade, setFade] = useState(true);
 
-  // Fetch banner data on component mount
+  // Fetch banner data from backend API
   useEffect(() => {
-    fetch("/data/banner.json") // ✅ Fetch from public folder
+    fetch(`${import.meta.env.VITE_API_URL}/banners`)
       .then((response) => response.json())
-      .then((data) => setBanners(data.banners))
+      .then((data) => setBanners(data))
       .catch((error) => console.error("Error fetching banner data:", error));
   }, []);
 
@@ -43,7 +43,6 @@ const Banner = () => {
 
   return (
     <div className="relative w-full h-[400px] flex items-center bg-gray-200 overflow-hidden mt-[40px]">
-
       {/* Left: Banner Image */}
       <div className="w-1/2 h-full">
         <img
@@ -54,21 +53,19 @@ const Banner = () => {
       </div>
 
       {/* Right: Rotating Messages with Fade Effect */}
-      {/* Right: Rotating Messages with Fade Effect */}
-<div className="w-1/2 h-full bg-green-50 flex flex-col justify-center items-center text-center p-6">
-  <div
-    key={currentMessageIndex}
-    className={`transition-opacity duration-1000 ${fade ? "opacity-100" : "opacity-0"}`}
-  >
-    <h2 className="text-4xl font-serif text-green-950">
-      {banner.messages[currentMessageIndex][0]}
-    </h2>
-    <p className="text-2xl text-gray-600 mt-2 font-extralight">
-      {banner.messages[currentMessageIndex][1]}
-    </p>
-  </div>
-</div>
-
+      <div className="w-1/2 h-full bg-green-50 flex flex-col justify-center items-center text-center p-6">
+        <div
+          key={currentMessageIndex}
+          className={`transition-opacity duration-1000 ${fade ? "opacity-100" : "opacity-0"}`}
+        >
+          <h2 className="text-4xl font-serif text-green-950">
+            {banner.messages[currentMessageIndex][0]}
+          </h2>
+          <p className="text-2xl text-gray-600 mt-2 font-extralight">
+            {banner.messages[currentMessageIndex][1]}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

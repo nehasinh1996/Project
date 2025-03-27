@@ -1,14 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db");
+const { connectDB } = require("./config/db");
 
 const offersRoutes = require("./routes/offers");
 const testimonialsRoutes = require("./routes/testimonials");
 const carouselRoutes = require("./routes/carousel");
 const selfcareRoutes = require("./routes/selfcare");
-
-
+const bannerRoutes = require("./routes/banner"); // 
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,7 +24,7 @@ app.use("/api/offers", offersRoutes);
 app.use("/api/testimonials", testimonialsRoutes);
 app.use("/api/carouselImages", carouselRoutes);
 app.use("/api/selfcare", selfcareRoutes);
-
+app.use("/api/banners", bannerRoutes); // ✅ Added banner API route
 
 // ✅ Start Server
 app.listen(PORT, () => {
