@@ -6,7 +6,8 @@ const connectDB = require("./config/db");
 const offersRoutes = require("./routes/offers");
 const testimonialsRoutes = require("./routes/testimonials");
 const carouselRoutes = require("./routes/carousel");
-const collectionsRoutes = require("./routes/collections"); 
+const selfcareRoutes = require("./routes/selfcareRoutes");
+
 
 
 const app = express();
@@ -23,7 +24,8 @@ connectDB();
 app.use("/api/offers", offersRoutes);
 app.use("/api/testimonials", testimonialsRoutes);
 app.use("/api/carouselImages", carouselRoutes);
-app.use("/api/collections", collectionsRoutes);
+app.use("/api/selfcare", selfcareRoutes);
+
 
 // ✅ Start Server
 app.listen(PORT, () => {

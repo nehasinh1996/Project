@@ -2,27 +2,27 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const Collections = () => {
-  const [collections, setCollections] = useState([]);
+const SelfCare = () => {
+  const [selfCareItems, setSelfCareItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCollections = async () => {
+    const fetchSelfCareItems = async () => {
       try {
-        const response = await fetch("https://project-xb43.onrender.com/api/collections");
+        const response = await fetch("https://project-xb43.onrender.com/api/selfcare");
         if (!response.ok) {
-          throw new Error("Failed to load collections");
+          throw new Error("Failed to load self-care items");
         }
         const data = await response.json();
-        setCollections(data);
+        setSelfCareItems(data);
       } catch (error) {
-        console.error("Error fetching collections:", error);
+        console.error("Error fetching self-care items:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCollections();
+    fetchSelfCareItems();
   }, []);
 
   return (
@@ -38,9 +38,9 @@ const Collections = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-10 justify-center">
         {loading ? (
-          <p className="text-gray-500 col-span-full">Loading collections...</p>
-        ) : collections.length > 0 ? (
-          collections.map((collection, index) => (
+          <p className="text-gray-500 col-span-full">Loading self-care items...</p>
+        ) : selfCareItems.length > 0 ? (
+          selfCareItems.map((item, index) => (
             <motion.div
               key={index}
               className="flex flex-col items-center cursor-pointer"
@@ -49,10 +49,10 @@ const Collections = () => {
               transition={{ duration: 0.6, ease: "easeOut" }}
               viewport={{ once: false, amount: 0.2 }}
             >
-              <Link to={collection.route}>
+              <Link to={item.route}>
                 <motion.img
-                  src={collection.image}
-                  alt={collection.title}
+                  src={item.image}
+                  alt={item.title}
                   className="h-44 w-44 rounded-full object-cover border-4 border-transparent transition-all duration-300 ease-in-out"
                   whileHover={{
                     scale: 1.08,
@@ -64,17 +64,17 @@ const Collections = () => {
                   className="text-2xl mt-4 text-gray-800 font-semibold transition-all duration-300"
                   whileHover={{ color: "#ff69b4" }}
                 >
-                  {collection.title}
+                  {item.title}
                 </motion.h1>
               </Link>
             </motion.div>
           ))
         ) : (
-          <p className="text-gray-500 col-span-full">No collections available.</p>
+          <p className="text-gray-500 col-span-full">No self-care items available.</p>
         )}
       </div>
     </div>
   );
 };
 
-export default Collections;
+export default SelfCare;
