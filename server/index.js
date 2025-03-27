@@ -6,7 +6,7 @@ const connectDB = require("./config/db");
 const offersRoutes = require("./routes/offers");
 const testimonialsRoutes = require("./routes/testimonials");
 const carouselRoutes = require("./routes/carousel");
-const selfcareRoutes = require("./routes/selfcareRoutes");
+const selfcareRoutes = require("./routes/selfcare");
 
 
 
