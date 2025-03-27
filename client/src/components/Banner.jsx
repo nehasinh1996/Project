@@ -12,7 +12,7 @@ const Banner = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/banners");
+        const response = await fetch("https://project-xb43.onrender.com/api/banners");
         const data = await response.json();
         setBanners(data.banners || []); // ✅ Extract banners array
       } catch (error) {

@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import productsReducer from "./productsSlice";
-import bannerReducer from "./bannerSlice";
 import filterReducer from "./filterSlice";
 import sortByReducer from "./sortby";
 import wishlistReducer from "./wishlistSlice";
@@ -11,7 +10,6 @@ import searchReducer from "./searchSlice";
 const store = configureStore({
   reducer: {
     products: productsReducer,
-    banners: bannerReducer,
     filter: filterReducer,
     sortBy: sortByReducer,
     wishlist: wishlistReducer,
