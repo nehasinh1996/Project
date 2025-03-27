@@ -26,7 +26,7 @@ const SelfCare = () => {
   }, []);
 
   return (
-    <div className="text-center py-16 px-6 bg-gradient-to-b from-pink-100 to-white">
+    <div className="text-center px-6">
       <motion.h1
         className="text-5xl font-bold mb-12 text-gray-700"
         initial={{ opacity: 0, y: -20 }}

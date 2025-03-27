@@ -26,31 +26,32 @@ const CarouselComponent = () => {
   }, []);
 
   return (
-    <Carousel autoplay autoplayDelay={3000} loop className="w-full h-[80vh] mt-10 overflow-hidden">
-      {loading
-        ? Array.from({ length: 3 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="w-full h-full bg-gray-300 animate-pulse flex items-center justify-center"
-            />
-          ))
-        : images.length > 0
-        ? images.map((src, idx) => (
+    <Carousel autoplay autoplayDelay={3000} loop className="w-full h-[90vh] mt-10 overflow-hidden">
+      {loading ? (
+        // Show a loading skeleton or spinner
+        <div className="w-full h-full flex justify-center items-center bg-gray-200">
+          <div className="border-t-4 border-blue-500 border-solid rounded-full w-16 h-16 animate-spin" />
+        </div>
+      ) : images.length > 0 ? (
+        images.map((src, idx) => (
+          <div key={idx} className="w-full h-full">
             <img
-              key={idx}
               src={src}
               alt={`slide ${idx + 1}`}
               className="w-full h-full object-cover transition-opacity duration-700 opacity-0"
-              onLoad={(e) => (e.target.style.opacity = 1)}
+              onLoad={(e) => (e.target.style.opacity = 1)} // Fade-in effect on load
             />
-          ))
-        : (
+          </div>
+        ))
+      ) : (
+        <div className="w-full h-full bg-gray-300 flex justify-center items-center">
           <img
             src="https://via.placeholder.com/1500x800?text=No+Images+Available"
             alt="No images"
             className="w-full h-full object-cover"
           />
-        )}
+        </div>
+      )}
     </Carousel>
   );
 };

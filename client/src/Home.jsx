@@ -11,7 +11,7 @@ const Home = () => {
       <Header />
       <CarouselComponent />
       
-      <div className="mt-30">
+      <div className="mt-5">
       <SelfCare/> {/* ✅ Display Collections Below Carousel */}
       <BannerAnimate/>
       </div>
