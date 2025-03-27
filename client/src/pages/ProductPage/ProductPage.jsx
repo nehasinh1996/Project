@@ -90,7 +90,10 @@ const ProductPage = () => {
   return (
     <>
       <Header />
+      
       <Banner />
+    
+     
       <div className="relative flex items-center justify-end px-2 py-3 border-b border-gray-300">
         <div className="fixed left-0 top-1/4 z-50">
           <FilterSidebar />

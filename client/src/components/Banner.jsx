@@ -8,24 +8,31 @@ const Banner = () => {
   const [banner, setBanner] = useState(null);
   const [fade, setFade] = useState(true);
 
-  // Fetch banner data from backend API
+  // ✅ Fetch banner data from backend API
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/banners`)
-      .then((response) => response.json())
-      .then((data) => setBanners(data))
-      .catch((error) => console.error("Error fetching banner data:", error));
+    const fetchBanners = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/banners");
+        const data = await response.json();
+        setBanners(data.banners || []); // ✅ Extract banners array
+      } catch (error) {
+        console.error("Error fetching banner data:", error);
+      }
+    };
+
+    fetchBanners();
   }, []);
 
-  // Update banner when category changes
+  // ✅ Update banner when category changes
   useEffect(() => {
     if (banners.length > 0) {
       const foundBanner = banners.find((b) => b.category === categoryName);
       setBanner(foundBanner || null);
-      setCurrentMessageIndex(0); // Reset message cycle on category change
+      setCurrentMessageIndex(0);
     }
   }, [categoryName, banners]);
 
-  // Cycle through messages every 4 seconds with fade effect
+  // ✅ Cycle through messages every 4 seconds with fade effect
   useEffect(() => {
     if (banner && banner.messages.length > 1) {
       const interval = setInterval(() => {
@@ -45,25 +52,14 @@ const Banner = () => {
     <div className="relative w-full h-[400px] flex items-center bg-gray-200 overflow-hidden mt-[40px]">
       {/* Left: Banner Image */}
       <div className="w-1/2 h-full">
-        <img
-          src={banner.image_url}
-          alt={categoryName}
-          className="w-full h-full object-cover"
-        />
+        <img src={banner.image_url} alt={categoryName} className="w-full h-full object-cover" />
       </div>
 
       {/* Right: Rotating Messages with Fade Effect */}
       <div className="w-1/2 h-full bg-green-50 flex flex-col justify-center items-center text-center p-6">
-        <div
-          key={currentMessageIndex}
-          className={`transition-opacity duration-1000 ${fade ? "opacity-100" : "opacity-0"}`}
-        >
-          <h2 className="text-4xl font-serif text-green-950">
-            {banner.messages[currentMessageIndex][0]}
-          </h2>
-          <p className="text-2xl text-gray-600 mt-2 font-extralight">
-            {banner.messages[currentMessageIndex][1]}
-          </p>
+        <div key={currentMessageIndex} className={`transition-opacity duration-1000 ${fade ? "opacity-100" : "opacity-0"}`}>
+          <h2 className="text-4xl font-serif text-green-950">{banner.messages[currentMessageIndex][0]}</h2>
+          <p className="text-2xl text-gray-600 mt-2 font-extralight">{banner.messages[currentMessageIndex][1]}</p>
         </div>
       </div>
     </div>

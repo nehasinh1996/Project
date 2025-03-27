@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const getBanners = async (_, res) => {
   try {
-    const data = await mongoose.connection.db.collection("banners").find().toArray();
+    const data = await mongoose.connection.db.collection("banner").find().toArray(); // ✅ Use "banner" instead of "banners"
     res.json({ banners: data });
   } catch (error) {
     console.error("❌ Error fetching banners:", error);
