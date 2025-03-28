@@ -1,16 +1,28 @@
 const mongoose = require("mongoose");
 
-// ✅ Fetch collection directly from MongoDB Atlas
+// ✅ Fetch all categories
 const getCategories = async (req, res) => {
   try {
-    const db = mongoose.connection.db; // Get MongoDB database connection
-    const categories = await db.collection("categories").find({}).toArray(); // Get data from 'categories'
+    const db = mongoose.connection.db;
+    const categories = await db.collection("categories").find({}).toArray();
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: "Error fetching categories", error });
   }
 };
 
+// ✅ Fetch all products
+const getAllProducts = async (req, res) => {
+  try {
+    const db = mongoose.connection.db;
+    const products = await db.collection("products").find({}).toArray();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching products", error });
+  }
+};
+
+// ✅ Fetch single product by ID
 const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -27,4 +39,4 @@ const getProductById = async (req, res) => {
   }
 };
 
-module.exports = { getCategories, getProductById };
+module.exports = { getCategories, getAllProducts, getProductById };

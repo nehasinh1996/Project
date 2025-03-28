@@ -1,9 +1,8 @@
-// routes/categories.js
 const express = require("express");
 const router = express.Router();
-const { getCategories } = require("../controllers/categoryController");
+const { getCategories } = require("../controllers/productController");
 
-// ✅ Route to get categories with subcategories and products
+// ✅ GET: Fetch all categories
 router.get("/", getCategories);
 
 module.exports = router;
