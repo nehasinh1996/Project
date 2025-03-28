@@ -12,14 +12,14 @@ const ProductCard = ({ product, wishlistView = false }) => {
 
   if (!product) return null;
 
-  const isWishlisted = wishlist.some((item) => item.id === product.id);
+  const isWishlisted = wishlist.some((item) => item._id === product._id); // ✅ Match with MongoDB _id
 
   // ✅ Handle Wishlist (Add or Remove)
   const handleWishlistClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (isWishlisted) {
-      dispatch(removeFromWishlist(product.id));
+      dispatch(removeFromWishlist(product._id)); // ✅ Use MongoDB _id for uniqueness
       toast.info("Removed from wishlist! ❌");
     } else {
       dispatch(addToWishlist(product));
@@ -32,17 +32,17 @@ const ProductCard = ({ product, wishlistView = false }) => {
     e.preventDefault();
     e.stopPropagation();
     dispatch(addToCart(product));
-    dispatch(removeFromWishlist(product.id)); // ✅ Remove from wishlist after adding to cart
+    dispatch(removeFromWishlist(product._id)); // ✅ Remove from wishlist after adding to cart
     toast.success("Added to cart! 🛒");
   };
 
   return (
-    <Link to={`/product/${product.id}`} className="block">
+    <Link to={`/product/${product._id}`} className="block">
       <div className="bg-white transition duration-300 cursor-pointer w-full max-w-[270px] mx-auto relative">
         {/* Product Image with Hover Effect */}
         <div className="relative w-auto overflow-hidden h-80 object-cover">
           <img
-            src={product.image_url || "/placeholder.jpg"}
+            src={product.image_url || "/placeholder.jpg"} // ✅ Use image_url from MongoDB
             alt={product.product_name || "Product Image"}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
@@ -95,7 +95,7 @@ const ProductCard = ({ product, wishlistView = false }) => {
 // ✅ PropTypes for validation
 ProductCard.propTypes = {
   product: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // ✅ Updated to _id
     image_url: PropTypes.string,
     product_name: PropTypes.string,
     price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,

@@ -1,18 +1,24 @@
-const mongoose = require("mongoose");
+// controllers/categoryController.js
+const { MongoClient } = require("mongodb");
+const uri = process.env.MONGO_URI;
 
-// ✅ Define Dynamic Schema for Categories
-const categorySchema = new mongoose.Schema({}, { strict: false });
-const Category = mongoose.model("Category", categorySchema, "categories");
-
-// ✅ Get all categories
-const getAllCategories = async (req, res) => {
+const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({});
+    const client = new MongoClient(uri);
+    await client.connect();
+
+    const database = client.db("SORA_DB");
+    const collection = database.collection("product");
+
+    // Fetch categories with subcategories and products
+    const categories = await collection.find({}).toArray();
+
     res.json({ categories });
-  } catch (err) {
-    console.error("Error fetching categories:", err);
-    res.status(500).json({ error: "Error fetching categories" });
+    await client.close();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ message: "Error fetching categories", error });
   }
 };
 
-module.exports = { getAllCategories };
+module.exports = { getCategories };

@@ -1,34 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories, setSubcategory } from "../redux/productsSlice";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 
 const Categories = () => {
-  const dispatch = useDispatch();
-  const { categories, status } = useSelector((state) => state.products);
+  const [categories, setCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [hoveredSubcategory, setHoveredSubcategory] = useState(null);
   const [hoveredMore, setHoveredMore] = useState(false);
+  const dropdownTimeoutRef = useRef(null); // ✅ Ref for handling dropdown delay
 
-  // ✅ Fetch categories only if status is idle
+  // ✅ Fetch categories from MongoDB API
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchCategories());
-    }
-  }, [dispatch, status]);
-
-  // ✅ Show loading or error states
-  if (status === "loading") {
-    return <p className="text-center text-gray-700">Loading categories...</p>;
-  }
-  if (status === "failed") {
-    return <p className="text-center text-red-500">Error loading categories.</p>;
-  }
+    fetch("https://project-xb43.onrender.com/api/categories")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Fetched categories:", data.categories);
+        setCategories(data.categories);
+      })
+      .catch((error) => console.error("Error fetching categories:", error));
+  }, []);
+  
 
   // ✅ Split categories into visible and extra categories
   const visibleCategories = categories.slice(0, 5);
   const extraCategories = categories.slice(5);
+
+  // ✅ Handle mouse enter for subcategory with delay
+  const handleMouseEnterSubcategory = (subcategoryName) => {
+    clearTimeout(dropdownTimeoutRef.current);
+    setHoveredSubcategory(subcategoryName);
+  };
+
+  // ✅ Handle mouse leave with delay to prevent disappearance
+  const handleMouseLeaveSubcategory = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setHoveredSubcategory(null);
+    }, 200);
+  };
 
   return (
     <ul className="flex space-x-6 text-gray-700 font-medium relative">
@@ -37,8 +46,16 @@ const Categories = () => {
         <li
           key={category.category_name}
           className="relative group"
-          onMouseEnter={() => setHoveredCategory(category.category_name)}
-          onMouseLeave={() => setHoveredCategory(null)}
+          onMouseEnter={() => {
+            clearTimeout(dropdownTimeoutRef.current);
+            setHoveredCategory(category.category_name);
+          }}
+          onMouseLeave={() => {
+            dropdownTimeoutRef.current = setTimeout(() => {
+              setHoveredCategory(null);
+              setHoveredSubcategory(null);
+            }, 200); // ✅ Delay to prevent disappearance
+          }}
         >
           <Link
             to={`/category/${category.category_name}`}
@@ -54,17 +71,55 @@ const Categories = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
-                className="absolute left-0 mt-2 bg-white shadow-lg rounded-md p-4 z-50 w-auto min-w-max whitespace-nowrap"
+                className="absolute left-0 mt-2 bg-white shadow-lg rounded-md p-4 z-50 min-w-max"
+                onMouseEnter={() => clearTimeout(dropdownTimeoutRef.current)}
+                onMouseLeave={() => {
+                  dropdownTimeoutRef.current = setTimeout(
+                    () => setHoveredCategory(null),
+                    200
+                  );
+                }}
               >
                 {category.subcategories.map((sub) => (
-                  <Link
+                  <div
                     key={sub.subcategory_name}
-                    to={`/category/${category.category_name}/${sub.subcategory_name}`}
-                    onClick={() => dispatch(setSubcategory(sub.subcategory_name))}
-                    className="block hover:text-black"
+                    className="relative group-hover:block hover:text-black"
+                    onMouseEnter={() => handleMouseEnterSubcategory(sub.subcategory_name)}
+                    onMouseLeave={handleMouseLeaveSubcategory}
                   >
-                    {sub.subcategory_name}
-                  </Link>
+                    <Link
+                      to={`/category/${category.category_name}/${sub.subcategory_name}`}
+                      className="block hover:text-black"
+                    >
+                      {sub.subcategory_name}{" "}
+                      <ChevronRightIcon className="inline w-4 h-4 ml-1" />
+                    </Link>
+
+                    {/* ✅ Show products on subcategory hover */}
+                    {hoveredSubcategory === sub.subcategory_name &&
+                      sub.products?.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute left-full top-0 ml-2 bg-white shadow-lg rounded-md p-4 z-50 min-w-max"
+                          onMouseEnter={() => clearTimeout(dropdownTimeoutRef.current)}
+                          onMouseLeave={handleMouseLeaveSubcategory}
+                        >
+                          {sub.products.map((product) => (
+                            <Link
+                              key={product.product_name}
+                              to={`/category/${category.category_name}/${sub.subcategory_name}/${product.product_name
+                                .replace(/\s+/g, "-")
+                                .toLowerCase()}`}
+                              className="block hover:text-black"
+                            >
+                              {product.product_name}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                  </div>
                 ))}
               </motion.div>
             )}
@@ -75,8 +130,16 @@ const Categories = () => {
       {extraCategories.length > 0 && (
         <li
           className="relative group"
-          onMouseEnter={() => setHoveredMore(true)}
-          onMouseLeave={() => setHoveredMore(false)}
+          onMouseEnter={() => {
+            clearTimeout(dropdownTimeoutRef.current);
+            setHoveredMore(true);
+          }}
+          onMouseLeave={() => {
+            dropdownTimeoutRef.current = setTimeout(
+              () => setHoveredMore(false),
+              200
+            );
+          }}
         >
           <span className="hover:text-black cursor-pointer flex items-center">
             More <ChevronDownIcon className="w-4 h-4 ml-1" />
@@ -88,7 +151,14 @@ const Categories = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute left-0 mt-2 bg-white shadow-lg rounded-md p-4 z-50 w-auto min-w-max whitespace-nowrap"
+              className="absolute left-0 mt-2 bg-white shadow-lg rounded-md p-4 z-50 min-w-max"
+              onMouseEnter={() => clearTimeout(dropdownTimeoutRef.current)}
+              onMouseLeave={() => {
+                dropdownTimeoutRef.current = setTimeout(
+                  () => setHoveredMore(false),
+                  200
+                );
+              }}
             >
               {extraCategories.map((category) => (
                 <Link
