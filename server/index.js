@@ -24,13 +24,13 @@ connectDB();
 // ✅ API Routes
 app.use("/api/offers", offersRoutes);
 app.use("/api/testimonials", testimonialsRoutes);
-app.use("/api/carousel", carouselRoutes);
+app.use("/api/carousel", carouselRoutes); // 🟢 This was working, kept unchanged
 app.use("/api/selfcare", selfcareRoutes);
-app.use("/api/banners", bannerRoutes); // ✅ Changed to plural for consistency
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
+app.use("/api/banner", bannerRoutes); // 🔄 Reverted from `/banners`
+app.use("/api/categories", categoryRoutes); // 🔄 Reverted to the original
+app.use("/api/products", productRoutes); // 🔄 Reverted to the original
 
-// ✅ Root Route (Optional - To check if server is running)
+// ✅ Root Route
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
