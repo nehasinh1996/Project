@@ -8,8 +8,8 @@ const testimonialsRoutes = require("./routes/testimonials");
 const carouselRoutes = require("./routes/carousel");
 const selfcareRoutes = require("./routes/selfcare");
 const bannerRoutes = require("./routes/banner");
-const categoryRoutes = require("./routes/categories"); // ✅ Added category API
-const productRoutes = require("./routes/products"); // ✅ Added product API
+const categoryRoutes = require("./routes/categories");
+const productRoutes = require("./routes/products");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,9 +26,9 @@ app.use("/api/offers", offersRoutes);
 app.use("/api/testimonials", testimonialsRoutes);
 app.use("/api/carouselImages", carouselRoutes);
 app.use("/api/selfcare", selfcareRoutes);
-app.use("/api/banners", bannerRoutes);
-app.use("/api/categories", categoryRoutes); // ✅ Added categories route
-app.use("/api/products", productRoutes); // ✅ Added products route
+app.use("/api/banner", bannerRoutes); // ✅ Corrected route
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
 
 // ✅ Start Server
 app.listen(PORT, () => {
