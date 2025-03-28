@@ -1,8 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // ✅ Fetch categories from backend API
+// ✅ Fetch categories from MongoDB Atlas
 export const fetchCategories = createAsyncThunk("products/fetchCategories", async () => {
-  const response = await fetch("https://your-backend-url.vercel.app/api/categories");
+  const response = await fetch("https://project-xb43.onrender.com/api/categories");
+  if (!response.ok) {
+    throw new Error("Failed to fetch categories");
+  }
   const data = await response.json();
   return data.categories; // ✅ Returns categories from MongoDB
 });
@@ -11,7 +15,7 @@ export const fetchCategories = createAsyncThunk("products/fetchCategories", asyn
 export const fetchProductById = createAsyncThunk(
   "products/fetchProductById",
   async (productId) => {
-    const response = await fetch(`https://your-backend-url.vercel.app/api/products/${productId}`);
+    const response = await fetch(`https://project-xb43.onrender.com/api/products/${productId}`);
     if (!response.ok) {
       throw new Error("Product not found");
     }
@@ -20,10 +24,20 @@ export const fetchProductById = createAsyncThunk(
   }
 );
 
+// ✅ Safely retrieve local storage values
+let storedCategory, storedSubcategory;
+try {
+  storedCategory = localStorage.getItem("selectedCategory");
+  storedSubcategory = localStorage.getItem("selectedSubcategory");
+} catch (error) {
+  console.error("Error reading from localStorage:", error);
+}
+
+// ✅ Initial state with safe storage values
 const initialState = {
   categories: [],
-  selectedCategory: localStorage.getItem("selectedCategory") || null,
-  selectedSubcategory: localStorage.getItem("selectedSubcategory") || null,
+  selectedCategory: storedCategory || null,
+  selectedSubcategory: storedSubcategory || null,
   products: [],
   selectedProduct: null,
   status: "idle",
@@ -46,6 +60,7 @@ const productsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // ✅ Fetch categories lifecycle
       .addCase(fetchCategories.pending, (state) => {
         state.status = "loading";
       })
@@ -55,7 +70,10 @@ const productsSlice = createSlice({
       })
       .addCase(fetchCategories.rejected, (state) => {
         state.status = "failed";
+        state.categories = []; // Clear on error
       })
+
+      // ✅ Fetch product by ID lifecycle
       .addCase(fetchProductById.pending, (state) => {
         state.status = "loading";
       })
@@ -65,10 +83,11 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductById.rejected, (state) => {
         state.status = "failed";
-        state.selectedProduct = null;
+        state.selectedProduct = null; // Clear on error
       });
   },
 });
 
+// ✅ Export actions and reducer
 export const { setCategory, setSubcategory } = productsSlice.actions;
 export default productsSlice.reducer;
