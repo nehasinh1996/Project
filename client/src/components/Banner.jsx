@@ -2,70 +2,68 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 const Banner = () => {
-  const { categoryName, subCategoryName, productName, productId } = useParams();
-  const [bannerData, setBannerData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { categoryName, subcategoryName, productName } = useParams();
+  const [banner, setBanner] = useState(null);
 
-  // ✅ Determine the banner source (category/subcategory/product)
-  const fetchBannerData = async () => {
-    let url = "";
-
-    // ✅ 1. If productName or productId exists, fetch product details
-    if (productName || productId) {
-      url = `https://project-xb43.onrender.com/api/products/${productId || productName}`;
-    }
-    // ✅ 2. If category or subcategory is selected, fetch banner from the parent
-    else if (categoryName) {
-      url = `https://project-xb43.onrender.com/api/banner/${categoryName}`;
-    }
-
-    try {
-      if (url) {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.banner) {
-          setBannerData(data.banner); // ✅ Correct banner from API
-        } else {
-          setBannerData({ banner_image: "/default-banner.jpg", description: "Explore Our Best Collections" });
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching banner:", error);
-      setBannerData({ banner_image: "/default-banner.jpg", description: "Explore Our Best Collections" });
-    } finally {
-      setLoading(false);
-    }
+  // ✅ Determine banner target based on priority
+  const getBannerTarget = () => {
+    if (categoryName) return categoryName;
+    if (subcategoryName) return subcategoryName;
+    if (productName) return categoryName; // ✅ Show parent category banner for product
+    return null;
   };
 
   useEffect(() => {
-    fetchBannerData();
-  }, [categoryName, subCategoryName, productName, productId]);
+    const fetchBannerData = async () => {
+      const target = getBannerTarget();
+      if (!target) {
+        setBanner(null);
+        return;
+      }
 
-  if (loading) return null; // ✅ Prevent render while loading
+      try {
+        const response = await fetch(
+          `https://project-xb43.onrender.com/api/banner/${encodeURIComponent(target)}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Banner not found");
+        }
+
+        const data = await response.json();
+        if (data.banners.length > 0) {
+          setBanner(data.banners[0]);
+        } else {
+          setBanner(null);
+        }
+      } catch (error) {
+        console.error("Error fetching banner:", error);
+        setBanner(null);
+      }
+    };
+
+    fetchBannerData();
+  }, [categoryName, subcategoryName, productName]);
+
+  if (!banner) {
+    return (
+      <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+        <p className="text-gray-500">No Banner Available</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {bannerData && (
-        <div
-          className="relative w-full h-64 bg-cover bg-center flex items-center justify-center"
-          style={{ backgroundImage: `url(${bannerData.banner_image})` }}
-        >
-          <div className="text-center bg-black bg-opacity-50 p-4 rounded-md">
-            <h1 className="text-white text-2xl font-bold">
-              {categoryName
-                ? `Explore ${categoryName}`
-                : subCategoryName
-                ? `Explore ${subCategoryName}`
-                : productName
-                ? "Product Details"
-                : "Explore Our Best Collections"}
-            </h1>
-            <p className="text-gray-300 mt-2">{bannerData.description}</p>
-          </div>
-        </div>
-      )}
-    </>
+    <div className="w-full h-64 relative">
+      <img
+        src={banner.image_url}
+        alt={banner.category_name}
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <h1 className="text-white text-3xl font-bold">{banner.category_name}</h1>
+      </div>
+    </div>
   );
 };
 

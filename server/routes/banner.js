@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { getBanners, getBannerByCategory } = require("../controllers/bannerController");
 
-// ✅ Get all banners
+// ✅ Route to get all banners
 router.get("/", getBanners);
 
-// ✅ Get banner by category, subcategory, or product name
-router.get("/:categoryName", getBannerByCategory);
+// ✅ Route to get banner by category, subcategory, or product name
+router.get("/:target", getBannerByCategory);
 
 module.exports = router;
