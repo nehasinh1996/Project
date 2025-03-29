@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Replace with your actual API endpoint
-const API_URL = "https://your-backend-url.com/api/categories";
+const API_URL = "https://project-xb43.onrender.com/api/categories";
 
 // Async thunk to fetch categories
 export const fetchCategories = createAsyncThunk("category/fetchCategories", async () => {
