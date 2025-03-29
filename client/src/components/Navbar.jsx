@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { HeartIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 import Logo from "./Logo";
-import Categories from "./Categories";
 import SearchBar from "./SearchBar";
+import Menu from "./Menu";
 
 const Navbar = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -43,7 +43,7 @@ const Navbar = () => {
 
         {/* ✅ Center: Categories (Independent) */}
         <div className="flex-1 flex justify-center">
-          <Categories />
+          <Menu/>
         </div>
 
         {/* ✅ Search Bar (Independent) */}

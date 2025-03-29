@@ -6,6 +6,7 @@ import wishlistReducer from "./wishlistSlice";
 import cartReducer from "./cartSlice";
 import authReducer from "./authSlice"; // ✅ Import authReducer
 import searchReducer from "./searchSlice";
+import categoryReducer from "./categorySlice";
 
 const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ const store = configureStore({
     cart: cartReducer,
     auth: authReducer, // ✅ Add auth reducer
     search: searchReducer,
+    category: categoryReducer,
   },
   devTools: import.meta.env.MODE !== "production",
 
